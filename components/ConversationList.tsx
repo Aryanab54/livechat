@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { ScrollArea } from "./ui/scroll-area";
 import { Id } from "@/convex/_generated/dataModel";
 import { MessageSquare } from "lucide-react";
+import { ConversationSkeleton } from "./Skeletons";
 
 interface ConversationListProps {
   currentUserId: Id<"users">;
@@ -19,7 +20,9 @@ export function ConversationList({ currentUserId, selectedUserId, onSelectUser, 
 
   return (
     <ScrollArea className="h-[calc(100vh-73px)]">
-      {conversations?.length === 0 ? (
+      {!conversations ? (
+        <ConversationSkeleton />
+      ) : conversations.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-full p-8 text-center">
           <MessageSquare className="h-12 w-12 text-muted-foreground/50 mb-4" />
           <h3 className="font-medium text-lg mb-2">No conversations yet</h3>
@@ -28,7 +31,7 @@ export function ConversationList({ currentUserId, selectedUserId, onSelectUser, 
           </p>
         </div>
       ) : (
-        conversations?.map(({ user, lastMessage, unreadCount }) => (
+        conversations.map(({ user, lastMessage, unreadCount }) => (
           <button
             key={user._id}
             onClick={() => onSelectUser(user._id)}

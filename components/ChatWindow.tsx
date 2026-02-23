@@ -8,8 +8,9 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Send, MessagesSquare, ArrowDown, Trash2 } from "lucide-react";
-import { formatMessageTime } from "@/lib/utils";
+import { Send, MessagesSquare, ArrowDown, AlertCircle } from "lucide-react";
+import { MessageItem } from "./MessageItem";
+import { MessageSkeleton } from "./Skeletons";
 
 interface ChatWindowProps {
   currentUserId: Id<"users">;
@@ -20,8 +21,10 @@ interface ChatWindowProps {
 export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindowProps) {
   const [message, setMessage] = useState("");
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isUserScrollingRef = useRef(false);
   
   const messages = useQuery(api.messages.getConversation, {
@@ -90,20 +93,30 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
   const handleSend = async () => {
     if (!message.trim()) return;
     
+    const messageToSend = message;
+    setMessage("");
+    setPendingMessage(messageToSend);
+    setSendError(null);
+    
     clearTyping({ userId: currentUserId });
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
     
-    await sendMessage({
-      senderId: currentUserId,
-      receiverId: selectedUser._id,
-      content: message,
-    });
-    
-    setMessage("");
-    isUserScrollingRef.current = false;
-    scrollToBottom();
+    try {
+      await sendMessage({
+        senderId: currentUserId,
+        receiverId: selectedUser._id,
+        content: messageToSend,
+      });
+      setPendingMessage(null);
+      isUserScrollingRef.current = false;
+      scrollToBottom();
+    } catch (error) {
+      setSendError("Failed to send message");
+      setMessage(messageToSend);
+      setPendingMessage(null);
+    }
   };
 
   const handleDelete = async (messageId: Id<"messages">) => {
@@ -131,7 +144,9 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
       </div>
 
       <ScrollArea ref={scrollRef} className="flex-1 p-4" onScroll={handleScroll}>
-        {messages?.length === 0 ? (
+        {!messages ? (
+          <MessageSkeleton />
+        ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <MessagesSquare className="h-16 w-16 text-muted-foreground/50 mb-4" />
             <h3 className="font-medium text-lg mb-2">No messages yet</h3>
@@ -141,39 +156,22 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
           </div>
         ) : (
           <div className="space-y-4">
-            {messages?.map((msg) => (
-              <div
+            {messages.map((msg) => (
+              <MessageItem
                 key={msg._id}
-                className={`flex ${msg.senderId === currentUserId ? "justify-end" : "justify-start"}`}
-              >
-                <div className="flex items-end gap-2 group">
-                  {msg.senderId === currentUserId && !msg.deleted && (
-                    <button
-                      onClick={() => handleDelete(msg._id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity mb-2"
-                    >
-                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
-                    </button>
-                  )}
-                  <div
-                    className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                      msg.senderId === currentUserId
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted"
-                    }`}
-                  >
-                    {msg.deleted ? (
-                      <p className="italic opacity-70">This message was deleted</p>
-                    ) : (
-                      <p>{msg.content}</p>
-                    )}
-                    <p className="text-xs opacity-70 mt-1">
-                      {formatMessageTime(msg.timestamp)}
-                    </p>
-                  </div>
+                msg={msg}
+                currentUserId={currentUserId}
+                onDelete={handleDelete}
+              />
+            ))}
+            {pendingMessage && (
+              <div className="flex justify-end">
+                <div className="max-w-[70%] rounded-lg px-4 py-2 bg-primary/50 text-primary-foreground">
+                  <p>{pendingMessage}</p>
+                  <p className="text-xs opacity-70 mt-1">Sending...</p>
                 </div>
               </div>
-            ))}
+            )}
             {isOtherUserTyping && (
               <div className="flex justify-start">
                 <div className="bg-muted rounded-lg px-4 py-3">
@@ -198,19 +196,35 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
         </button>
       )}
 
-      <div className="p-4 border-t flex gap-2">
-        <Input
-          value={message}
-          onChange={(e) => {
-            setMessage(e.target.value);
-            handleTyping();
-          }}
-          onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder="Type a message..."
-        />
-        <Button onClick={handleSend} size="icon">
-          <Send className="h-4 w-4" />
-        </Button>
+      <div className="p-4 border-t flex flex-col gap-2">
+        {sendError && (
+          <div className="flex items-center gap-2 text-sm text-destructive">
+            <AlertCircle className="h-4 w-4" />
+            <span>{sendError}</span>
+            <button
+              onClick={handleSend}
+              className="ml-auto text-xs underline"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <Input
+            value={message}
+            onChange={(e) => {
+              setMessage(e.target.value);
+              setSendError(null);
+              handleTyping();
+            }}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="Type a message..."
+            disabled={!!pendingMessage}
+          />
+          <Button onClick={handleSend} size="icon" disabled={!!pendingMessage}>
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -15,7 +15,7 @@ export default defineSchema({
     content: v.string(),
     timestamp: v.number(),
     read: v.boolean(),
-    deleted: v.boolean(),
+    deleted: v.optional(v.boolean()),
   })
     .index("by_receiver", ["receiverId"])
     .index("by_sender", ["senderId"]),
@@ -32,4 +32,12 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_chat", ["chatWithUserId"]),
+
+  reactions: defineTable({
+    messageId: v.id("messages"),
+    userId: v.id("users"),
+    emoji: v.string(),
+  })
+    .index("by_message", ["messageId"])
+    .index("by_user_message", ["userId", "messageId"]),
 });
