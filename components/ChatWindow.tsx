@@ -8,7 +8,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Send, MessagesSquare, ArrowDown } from "lucide-react";
+import { Send, MessagesSquare, ArrowDown, Trash2 } from "lucide-react";
 import { formatMessageTime } from "@/lib/utils";
 
 interface ChatWindowProps {
@@ -39,6 +39,7 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
   const setTyping = useMutation(api.typing.setTyping);
   const clearTyping = useMutation(api.typing.clearTyping);
   const markAsRead = useMutation(api.messages.markAsRead);
+  const deleteMessage = useMutation(api.messages.deleteMessage);
 
   const scrollToBottom = () => {
     if (scrollRef.current) {
@@ -105,6 +106,10 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
     scrollToBottom();
   };
 
+  const handleDelete = async (messageId: Id<"messages">) => {
+    await deleteMessage({ messageId, userId: currentUserId });
+  };
+
   return (
     <div className="flex-1 flex flex-col relative">
       <div className="p-4 border-b flex items-center gap-3">
@@ -141,17 +146,31 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
                 key={msg._id}
                 className={`flex ${msg.senderId === currentUserId ? "justify-end" : "justify-start"}`}
               >
-                <div
-                  className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                    msg.senderId === currentUserId
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
-                  }`}
-                >
-                  <p>{msg.content}</p>
-                  <p className="text-xs opacity-70 mt-1">
-                    {formatMessageTime(msg.timestamp)}
-                  </p>
+                <div className="flex items-end gap-2 group">
+                  {msg.senderId === currentUserId && !msg.deleted && (
+                    <button
+                      onClick={() => handleDelete(msg._id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity mb-2"
+                    >
+                      <Trash2 className="h-4 w-4 text-muted-foreground hover:text-destructive" />
+                    </button>
+                  )}
+                  <div
+                    className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                      msg.senderId === currentUserId
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
+                    {msg.deleted ? (
+                      <p className="italic opacity-70">This message was deleted</p>
+                    ) : (
+                      <p>{msg.content}</p>
+                    )}
+                    <p className="text-xs opacity-70 mt-1">
+                      {formatMessageTime(msg.timestamp)}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}

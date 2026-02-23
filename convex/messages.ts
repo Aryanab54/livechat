@@ -12,6 +12,7 @@ export const sendMessage = mutation({
       ...args,
       timestamp: Date.now(),
       read: false,
+      deleted: false,
     });
   },
 });
@@ -91,5 +92,21 @@ export const markAsRead = mutation({
     await Promise.all(
       unreadMessages.map((msg) => ctx.db.patch(msg._id, { read: true }))
     );
+  },
+});
+
+export const deleteMessage = mutation({
+  args: {
+    messageId: v.id("messages"),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const message = await ctx.db.get(args.messageId);
+    
+    if (!message || message.senderId !== args.userId) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.patch(args.messageId, { deleted: true });
   },
 });

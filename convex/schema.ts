@@ -15,6 +15,7 @@ export default defineSchema({
     content: v.string(),
     timestamp: v.number(),
     read: v.boolean(),
+    deleted: v.boolean(),
   })
     .index("by_receiver", ["receiverId"])
     .index("by_sender", ["senderId"]),
