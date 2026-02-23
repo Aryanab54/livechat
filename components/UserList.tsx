@@ -13,9 +13,10 @@ interface UserListProps {
   currentUserId?: Id<"users">;
   selectedUserId?: Id<"users">;
   onSelectUser: (userId: Id<"users">) => void;
+  onlineUsers: Id<"users">[];
 }
 
-export function UserList({ currentUserId, selectedUserId, onSelectUser }: UserListProps) {
+export function UserList({ currentUserId, selectedUserId, onSelectUser, onlineUsers }: UserListProps) {
   const [search, setSearch] = useState("");
   const users = useQuery(api.users.getAllUsers);
 
@@ -56,10 +57,15 @@ export function UserList({ currentUserId, selectedUserId, onSelectUser }: UserLi
                 selectedUserId === user._id ? "bg-accent" : ""
               }`}
             >
-              <Avatar>
-                <AvatarImage src={user.imageUrl} />
-                <AvatarFallback>{user.name[0]}</AvatarFallback>
-              </Avatar>
+              <div className="relative">
+                <Avatar>
+                  <AvatarImage src={user.imageUrl} />
+                  <AvatarFallback>{user.name[0]}</AvatarFallback>
+                </Avatar>
+                {onlineUsers.includes(user._id) && (
+                  <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
+                )}
+              </div>
               <div className="text-left">
                 <p className="font-medium">{user.name}</p>
                 <p className="text-sm text-muted-foreground truncate">{user.email}</p>

@@ -11,9 +11,10 @@ interface ConversationListProps {
   currentUserId: Id<"users">;
   selectedUserId?: Id<"users">;
   onSelectUser: (userId: Id<"users">) => void;
+  onlineUsers: Id<"users">[];
 }
 
-export function ConversationList({ currentUserId, selectedUserId, onSelectUser }: ConversationListProps) {
+export function ConversationList({ currentUserId, selectedUserId, onSelectUser, onlineUsers }: ConversationListProps) {
   const conversations = useQuery(api.messages.getConversations, { userId: currentUserId });
 
   return (
@@ -35,10 +36,15 @@ export function ConversationList({ currentUserId, selectedUserId, onSelectUser }
               selectedUserId === user._id ? "bg-accent" : ""
             }`}
           >
-            <Avatar>
-              <AvatarImage src={user.imageUrl} />
-              <AvatarFallback>{user.name[0]}</AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar>
+                <AvatarImage src={user.imageUrl} />
+                <AvatarFallback>{user.name[0]}</AvatarFallback>
+              </Avatar>
+              {onlineUsers.includes(user._id) && (
+                <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
+              )}
+            </div>
             <div className="flex-1 text-left overflow-hidden">
               <p className="font-medium">{user.name}</p>
               <p className="text-sm text-muted-foreground truncate">

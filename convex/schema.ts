@@ -17,4 +17,9 @@ export default defineSchema({
   })
     .index("by_receiver", ["receiverId"])
     .index("by_sender", ["senderId"]),
+
+  presence: defineTable({
+    userId: v.id("users"),
+    lastSeen: v.number(),
+  }).index("by_user", ["userId"]),
 });

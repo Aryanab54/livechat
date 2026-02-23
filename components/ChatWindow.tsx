@@ -14,9 +14,10 @@ import { formatMessageTime } from "@/lib/utils";
 interface ChatWindowProps {
   currentUserId: Id<"users">;
   selectedUser: { _id: Id<"users">; name: string; imageUrl?: string };
+  isOnline: boolean;
 }
 
-export function ChatWindow({ currentUserId, selectedUser }: ChatWindowProps) {
+export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindowProps) {
   const [message, setMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
   
@@ -48,11 +49,21 @@ export function ChatWindow({ currentUserId, selectedUser }: ChatWindowProps) {
   return (
     <div className="flex-1 flex flex-col">
       <div className="p-4 border-b flex items-center gap-3">
-        <Avatar>
-          <AvatarImage src={selectedUser.imageUrl} />
-          <AvatarFallback>{selectedUser.name[0]}</AvatarFallback>
-        </Avatar>
-        <h2 className="font-semibold">{selectedUser.name}</h2>
+        <div className="relative">
+          <Avatar>
+            <AvatarImage src={selectedUser.imageUrl} />
+            <AvatarFallback>{selectedUser.name[0]}</AvatarFallback>
+          </Avatar>
+          {isOnline && (
+            <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
+          )}
+        </div>
+        <div>
+          <h2 className="font-semibold">{selectedUser.name}</h2>
+          <p className="text-xs text-muted-foreground">
+            {isOnline ? "Online" : "Offline"}
+          </p>
+        </div>
       </div>
 
       <ScrollArea ref={scrollRef} className="flex-1 p-4">

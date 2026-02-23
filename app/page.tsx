@@ -11,6 +11,7 @@ import { ChatWindow } from "@/components/ChatWindow";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useStoreUser } from "@/hooks/useStoreUser";
+import { usePresence } from "@/hooks/usePresence";
 import { MessageSquare, Users } from "lucide-react";
 
 export default function Home() {
@@ -25,7 +26,10 @@ export default function Home() {
     isSignedIn && user ? { clerkId: user.id } : "skip"
   );
   
+  usePresence(currentUser?._id);
+  
   const users = useQuery(api.users.getAllUsers);
+  const onlineUsers = useQuery(api.presence.getOnlineUsers);
   const selectedUser = users?.find((u) => u._id === selectedUserId);
 
   if (!isSignedIn) {
@@ -86,19 +90,25 @@ export default function Home() {
                 currentUserId={currentUser._id}
                 selectedUserId={selectedUserId}
                 onSelectUser={setSelectedUserId}
+                onlineUsers={onlineUsers || []}
               />
             ) : (
               <UserList
                 currentUserId={currentUser._id}
                 selectedUserId={selectedUserId}
                 onSelectUser={setSelectedUserId}
+                onlineUsers={onlineUsers || []}
               />
             )}
           </div>
         )}
         
         {selectedUser && currentUser ? (
-          <ChatWindow currentUserId={currentUser._id} selectedUser={selectedUser} />
+          <ChatWindow 
+            currentUserId={currentUser._id} 
+            selectedUser={selectedUser}
+            isOnline={onlineUsers?.includes(selectedUser._id) || false}
+          />
         ) : (
           <div className="flex-1 flex items-center justify-center text-muted-foreground">
             Select a user to start chatting
