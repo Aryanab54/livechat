@@ -8,7 +8,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Send } from "lucide-react";
+import { Send, MessagesSquare } from "lucide-react";
 import { formatMessageTime } from "@/lib/utils";
 
 interface ChatWindowProps {
@@ -56,27 +56,37 @@ export function ChatWindow({ currentUserId, selectedUser }: ChatWindowProps) {
       </div>
 
       <ScrollArea ref={scrollRef} className="flex-1 p-4">
-        <div className="space-y-4">
-          {messages?.map((msg) => (
-            <div
-              key={msg._id}
-              className={`flex ${msg.senderId === currentUserId ? "justify-end" : "justify-start"}`}
-            >
+        {messages?.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full text-center">
+            <MessagesSquare className="h-16 w-16 text-muted-foreground/50 mb-4" />
+            <h3 className="font-medium text-lg mb-2">No messages yet</h3>
+            <p className="text-sm text-muted-foreground">
+              Start the conversation with {selectedUser.name}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {messages?.map((msg) => (
               <div
-                className={`max-w-[70%] rounded-lg px-4 py-2 ${
-                  msg.senderId === currentUserId
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
-                }`}
+                key={msg._id}
+                className={`flex ${msg.senderId === currentUserId ? "justify-end" : "justify-start"}`}
               >
-                <p>{msg.content}</p>
-                <p className="text-xs opacity-70 mt-1">
-                  {formatMessageTime(msg.timestamp)}
-                </p>
+                <div
+                  className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                    msg.senderId === currentUserId
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted"
+                  }`}
+                >
+                  <p>{msg.content}</p>
+                  <p className="text-xs opacity-70 mt-1">
+                    {formatMessageTime(msg.timestamp)}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </ScrollArea>
 
       <div className="p-4 border-t flex gap-2">
