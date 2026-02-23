@@ -8,7 +8,7 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Send, MessagesSquare } from "lucide-react";
+import { Send, MessagesSquare, ArrowDown } from "lucide-react";
 import { formatMessageTime } from "@/lib/utils";
 
 interface ChatWindowProps {
@@ -19,8 +19,10 @@ interface ChatWindowProps {
 
 export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindowProps) {
   const [message, setMessage] = useState("");
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const isUserScrollingRef = useRef(false);
   
   const messages = useQuery(api.messages.getConversation, {
     userId1: currentUserId,
@@ -38,13 +40,37 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
   const clearTyping = useMutation(api.typing.clearTyping);
   const markAsRead = useMutation(api.messages.markAsRead);
 
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      setShowScrollButton(false);
+      isUserScrollingRef.current = false;
+    }
+  };
+
+  const handleScroll = () => {
+    if (!scrollRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
+    const isAtBottom = scrollHeight - scrollTop - clientHeight < 50;
+    
+    if (isAtBottom) {
+      setShowScrollButton(false);
+      isUserScrollingRef.current = false;
+    } else {
+      isUserScrollingRef.current = true;
+    }
+  };
+
   useEffect(() => {
     markAsRead({ userId: currentUserId, otherUserId: selectedUser._id });
   }, [selectedUser._id, currentUserId, markAsRead]);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (!isUserScrollingRef.current) {
+      scrollToBottom();
+    } else {
+      setShowScrollButton(true);
     }
   }, [messages, isOtherUserTyping]);
 
@@ -75,10 +101,12 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
     });
     
     setMessage("");
+    isUserScrollingRef.current = false;
+    scrollToBottom();
   };
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col relative">
       <div className="p-4 border-b flex items-center gap-3">
         <div className="relative">
           <Avatar>
@@ -97,7 +125,7 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
         </div>
       </div>
 
-      <ScrollArea ref={scrollRef} className="flex-1 p-4">
+      <ScrollArea ref={scrollRef} className="flex-1 p-4" onScroll={handleScroll}>
         {messages?.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center">
             <MessagesSquare className="h-16 w-16 text-muted-foreground/50 mb-4" />
@@ -141,6 +169,15 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
           </div>
         )}
       </ScrollArea>
+
+      {showScrollButton && (
+        <button
+          onClick={scrollToBottom}
+          className="absolute bottom-24 right-8 bg-primary text-primary-foreground rounded-full p-3 shadow-lg hover:bg-primary/90 transition-all"
+        >
+          <ArrowDown className="h-5 w-5" />
+        </button>
+      )}
 
       <div className="p-4 border-t flex gap-2">
         <Input
