@@ -6,14 +6,17 @@ import { useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { UserList } from "@/components/UserList";
+import { ConversationList } from "@/components/ConversationList";
 import { ChatWindow } from "@/components/ChatWindow";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useStoreUser } from "@/hooks/useStoreUser";
+import { MessageSquare, Users } from "lucide-react";
 
 export default function Home() {
   const { user, isSignedIn } = useUser();
   const [selectedUserId, setSelectedUserId] = useState<Id<"users"> | undefined>();
+  const [activeTab, setActiveTab] = useState<"conversations" | "users">("conversations");
   
   useStoreUser();
   
@@ -57,11 +60,41 @@ export default function Home() {
 
       <div className="flex flex-1 overflow-hidden">
         {currentUser && (
-          <UserList
-            currentUserId={currentUser._id}
-            selectedUserId={selectedUserId}
-            onSelectUser={setSelectedUserId}
-          />
+          <div className="w-80 border-r bg-muted/10">
+            <div className="flex border-b">
+              <button
+                onClick={() => setActiveTab("conversations")}
+                className={`flex-1 p-3 flex items-center justify-center gap-2 transition-colors ${
+                  activeTab === "conversations" ? "bg-accent" : "hover:bg-accent/50"
+                }`}
+              >
+                <MessageSquare className="h-4 w-4" />
+                Chats
+              </button>
+              <button
+                onClick={() => setActiveTab("users")}
+                className={`flex-1 p-3 flex items-center justify-center gap-2 transition-colors ${
+                  activeTab === "users" ? "bg-accent" : "hover:bg-accent/50"
+                }`}
+              >
+                <Users className="h-4 w-4" />
+                Users
+              </button>
+            </div>
+            {activeTab === "conversations" ? (
+              <ConversationList
+                currentUserId={currentUser._id}
+                selectedUserId={selectedUserId}
+                onSelectUser={setSelectedUserId}
+              />
+            ) : (
+              <UserList
+                currentUserId={currentUser._id}
+                selectedUserId={selectedUserId}
+                onSelectUser={setSelectedUserId}
+              />
+            )}
+          </div>
         )}
         
         {selectedUser && currentUser ? (

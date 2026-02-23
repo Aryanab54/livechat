@@ -24,9 +24,8 @@ export function UserList({ currentUserId, selectedUserId, onSelectUser }: UserLi
     .filter((user) => user.name.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="w-80 border-r bg-muted/10">
-      <div className="p-4 border-b space-y-3">
-        <h2 className="font-semibold text-lg">Users</h2>
+    <>
+      <div className="p-3 border-b">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -42,7 +41,7 @@ export function UserList({ currentUserId, selectedUserId, onSelectUser }: UserLi
           <button
             key={user._id}
             onClick={() => onSelectUser(user._id)}
-            className={`w-full p-4 flex items-center gap-3 hover:bg-accent transition-colors ${
+            className={`w-full p-4 flex items-center gap-3 hover:bg-accent transition-colors border-b ${
               selectedUserId === user._id ? "bg-accent" : ""
             }`}
           >
@@ -57,6 +56,6 @@ export function UserList({ currentUserId, selectedUserId, onSelectUser }: UserLi
           </button>
         ))}
       </ScrollArea>
-    </div>
+    </>
   );
 }
