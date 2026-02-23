@@ -36,6 +36,11 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
   const sendMessage = useMutation(api.messages.sendMessage);
   const setTyping = useMutation(api.typing.setTyping);
   const clearTyping = useMutation(api.typing.clearTyping);
+  const markAsRead = useMutation(api.messages.markAsRead);
+
+  useEffect(() => {
+    markAsRead({ userId: currentUserId, otherUserId: selectedUser._id });
+  }, [selectedUser._id, currentUserId, markAsRead]);
 
   useEffect(() => {
     if (scrollRef.current) {

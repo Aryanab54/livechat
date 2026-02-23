@@ -14,6 +14,7 @@ export default defineSchema({
     receiverId: v.id("users"),
     content: v.string(),
     timestamp: v.number(),
+    read: v.boolean(),
   })
     .index("by_receiver", ["receiverId"])
     .index("by_sender", ["senderId"]),

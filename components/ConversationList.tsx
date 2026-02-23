@@ -28,7 +28,7 @@ export function ConversationList({ currentUserId, selectedUserId, onSelectUser, 
           </p>
         </div>
       ) : (
-        conversations?.map(({ user, lastMessage }) => (
+        conversations?.map(({ user, lastMessage, unreadCount }) => (
           <button
             key={user._id}
             onClick={() => onSelectUser(user._id)}
@@ -52,12 +52,19 @@ export function ConversationList({ currentUserId, selectedUserId, onSelectUser, 
                 {lastMessage.content}
               </p>
             </div>
-            <span className="text-xs text-muted-foreground">
-              {new Date(lastMessage.timestamp).toLocaleTimeString([], { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </span>
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-xs text-muted-foreground">
+                {new Date(lastMessage.timestamp).toLocaleTimeString([], { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </span>
+              {unreadCount > 0 && (
+                <span className="bg-primary text-primary-foreground text-xs font-medium px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                  {unreadCount}
+                </span>
+              )}
+            </div>
           </button>
         ))
       )}
