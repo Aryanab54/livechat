@@ -20,22 +20,48 @@ interface ChatWindowProps {
 export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindowProps) {
   const [message, setMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout>();
   
   const messages = useQuery(api.messages.getConversation, {
     userId1: currentUserId,
     userId2: selectedUser._id,
   });
   
+  const typingUsers = useQuery(api.typing.getTypingUsers, {
+    chatWithUserId: currentUserId,
+  });
+  
+  const isOtherUserTyping = typingUsers?.includes(selectedUser._id);
+  
   const sendMessage = useMutation(api.messages.sendMessage);
+  const setTyping = useMutation(api.typing.setTyping);
+  const clearTyping = useMutation(api.typing.clearTyping);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, isOtherUserTyping]);
+
+  const handleTyping = () => {
+    setTyping({ userId: currentUserId, chatWithUserId: selectedUser._id });
+    
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    typingTimeoutRef.current = setTimeout(() => {
+      clearTyping({ userId: currentUserId });
+    }, 2000);
+  };
 
   const handleSend = async () => {
     if (!message.trim()) return;
+    
+    clearTyping({ userId: currentUserId });
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
     
     await sendMessage({
       senderId: currentUserId,
@@ -61,7 +87,7 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
         <div>
           <h2 className="font-semibold">{selectedUser.name}</h2>
           <p className="text-xs text-muted-foreground">
-            {isOnline ? "Online" : "Offline"}
+            {isOtherUserTyping ? "typing..." : isOnline ? "Online" : "Offline"}
           </p>
         </div>
       </div>
@@ -96,6 +122,17 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
                 </div>
               </div>
             ))}
+            {isOtherUserTyping && (
+              <div className="flex justify-start">
+                <div className="bg-muted rounded-lg px-4 py-3">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 bg-muted-foreground/60 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </ScrollArea>
@@ -103,7 +140,10 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
       <div className="p-4 border-t flex gap-2">
         <Input
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            handleTyping();
+          }}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           placeholder="Type a message..."
         />

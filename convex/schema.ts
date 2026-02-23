@@ -22,4 +22,12 @@ export default defineSchema({
     userId: v.id("users"),
     lastSeen: v.number(),
   }).index("by_user", ["userId"]),
+
+  typing: defineTable({
+    userId: v.id("users"),
+    chatWithUserId: v.id("users"),
+    timestamp: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_chat", ["chatWithUserId"]),
 });
