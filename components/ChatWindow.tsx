@@ -9,6 +9,7 @@ import { Button } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Send } from "lucide-react";
+import { formatMessageTime } from "@/lib/utils";
 
 interface ChatWindowProps {
   currentUserId: Id<"users">;
@@ -70,7 +71,7 @@ export function ChatWindow({ currentUserId, selectedUser }: ChatWindowProps) {
               >
                 <p>{msg.content}</p>
                 <p className="text-xs opacity-70 mt-1">
-                  {new Date(msg.timestamp).toLocaleTimeString()}
+                  {formatMessageTime(msg.timestamp)}
                 </p>
               </div>
             </div>
