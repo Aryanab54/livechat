@@ -21,7 +21,7 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
   const [message, setMessage] = useState("");
   const [showScrollButton, setShowScrollButton] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout>();
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const isUserScrollingRef = useRef(false);
   
   const messages = useQuery(api.messages.getConversation, {
