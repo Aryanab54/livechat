@@ -1,170 +1,91 @@
-# LiveChat - Real-time Messaging Application
+**LiveChat**
 
-A fully-featured real-time chat application built with Next.js, TypeScript, Convex, and Clerk. Connect with users instantly and chat in real-time with a modern, responsive interface.
+LiveChat is a real-time messaging application that I built using Next.js, TypeScript, Convex, and Clerk. The main goal of this project was to create a smooth one-to-one chat experience with instant updates and a clean, responsive UI.
 
-## ✨ Features
+I wanted to build something that feels fast and modern without relying on manual refresh or complicated backend setups.
 
-### Authentication & User Management
-- 🔐 **Secure Authentication** - Sign up/login via email or social providers (Google, GitHub) using Clerk
-- 👤 **User Profiles** - Display user avatars and names throughout the app
-- 🔍 **User Discovery** - Browse all registered users with real-time search filtering
+About the Project
 
-### Messaging
-- 💬 **One-on-One Direct Messages** - Private conversations between users
-- ⚡ **Real-time Updates** - Messages appear instantly using Convex subscriptions
-- 🕐 **Smart Timestamps** - Context-aware time display (today: "2:34 PM", older: "Feb 15, 2:34 PM")
-- 🗑️ **Message Deletion** - Delete your own messages (soft delete with "This message was deleted" placeholder)
-- 😊 **Message Reactions** - React with emojis (👍 ❤ 😂 😮 😢) - one reaction per user, click again to remove
+In this application, users can sign up and log in securely using Clerk authentication. I integrated social login providers like Google and GitHub, and each user has a profile with their name and avatar displayed across the app.
 
-### User Experience
-- 🟢 **Online/Offline Status** - Real-time presence indicators showing who's currently active
-- ⌨️ **Typing Indicators** - See when someone is typing with animated dots
-- 🔔 **Unread Message Badges** - Count of unread messages per conversation, auto-clears when opened
-- 📜 **Smart Auto-Scroll** - Auto-scroll to new messages, or show "↓ New Messages" button if scrolled up
-- 💀 **Empty States** - Helpful messages when there are no conversations, messages, or search results
-- ⏳ **Loading States** - Skeleton loaders and spinners for smooth UX
-- ❌ **Error Handling** - Graceful error messages with retry options for failed actions
+Users can search for other registered users in real time and start private conversations with them.
 
-### Design
-- 📱 **Fully Responsive** - Optimized layouts for mobile, tablet, and desktop
-  - **Desktop (≥1024px)**: Sidebar and chat displayed side-by-side
-  - **Mobile/Tablet (<1024px)**: Conversation list by default, full-screen chat with back button
-- 🎨 **Modern UI** - Built with shadcn/ui components and Tailwind CSS
-- 🌓 **Dark Mode Support** - Automatic theme switching
+Messaging System
 
-## 🚀 Quick Start
+I implemented real-time one-to-one messaging using Convex. Messages appear instantly for both users without refreshing the page.
 
-### Prerequisites
-- Node.js 18+ installed
-- A Clerk account ([sign up here](https://clerk.com))
-- A Convex account ([sign up here](https://convex.dev))
+Each message shows a smart timestamp depending on when it was sent. Users can delete their own messages, and instead of removing them completely, the app displays a placeholder saying the message was deleted.
 
-### 1. Install Dependencies
+I also added emoji reactions. Each user can react once per message, change their reaction, or remove it by clicking again.
 
-```bash
+User Experience Features
+
+To make the experience more interactive, I built a real-time online/offline presence system based on recent activity timestamps.
+
+Typing indicators appear when someone is typing and automatically disappear after a short period of inactivity or when the message is sent.
+
+Unread message counts are calculated dynamically and are cleared when the conversation is opened.
+
+The chat automatically scrolls to the newest message. If the user scrolls up, a button appears to quickly jump back to the latest messages.
+
+I also handled loading states and error scenarios properly to keep the UI smooth and reliable.
+
+Responsive Design
+
+I designed the layout to work well on all screen sizes.
+
+On desktop, the conversation list and chat window appear side by side.
+On mobile and tablet, the conversation list is shown first, and the chat opens in full screen with a back button.
+
+The UI is built using Tailwind CSS and shadcn/ui components, and it supports dark mode.
+
+Tech Stack
+
+Next.js (App Router)
+TypeScript
+Convex (real-time backend and database)
+Clerk (authentication)
+Tailwind CSS
+shadcn/ui
+Lucide React
+
+Getting Started
+
+To run this project locally:
+
+Install dependencies
+
 npm install
-```
 
-### 2. Setup Clerk Authentication
+Set up Clerk by creating a new application in the Clerk dashboard and adding your keys to a .env.local file:
 
-1. Go to [Clerk Dashboard](https://dashboard.clerk.com)
-2. Create a new application
-3. Enable your preferred authentication methods (Email, Google, GitHub, etc.)
-4. Copy your API keys from the dashboard
-5. Create a `.env.local` file in the root directory:
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_key_here
+CLERK_SECRET_KEY=your_secret_here
 
-```env
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-```
+Then initialize Convex:
 
-### 3. Setup Convex Database
-
-```bash
 npx convex dev
-```
 
-This will:
-- Create a new Convex project (or link to existing)
-- Set up the database schema
-- Start the Convex development server
-- Generate a `CONVEX_DEPLOYMENT` in your `.env.local`
+Finally, start the development server:
 
-### 4. Run Development Server
-
-```bash
 npm run dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000] in your browser.
 
-## 🏗️ Tech Stack
+Project Structure
 
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Database**: Convex (real-time backend)
-- **Authentication**: Clerk
-- **UI Components**: shadcn/ui
-- **Styling**: Tailwind CSS
-- **Icons**: Lucide React
+The app directory contains the main Next.js application files.
+The components directory contains reusable UI components like the chat window and message items.
+The convex directory contains backend logic including schema, queries, mutations, presence tracking, typing indicators, and reactions.
+I used custom hooks for syncing users and managing presence. Utility functions are placed inside the lib folder.
 
-## 📁 Project Structure
+Deployment
 
-```
-livechat/
-├── app/                    # Next.js app directory
-│   ├── page.tsx           # Main chat page
-│   ├── layout.tsx         # Root layout with providers
-│   └── globals.css        # Global styles and Tailwind config
-├── components/            # React components
-│   ├── ChatWindow.tsx     # Main chat interface
-│   ├── ConversationList.tsx # Sidebar conversation list
-│   ├── UserList.tsx       # User discovery and search
-│   ├── MessageItem.tsx    # Individual message with reactions
-│   ├── Skeletons.tsx      # Loading state components
-│   └── ui/                # shadcn/ui components
-├── convex/                # Convex backend
-│   ├── schema.ts          # Database schema
-│   ├── users.ts           # User queries and mutations
-│   ├── messages.ts        # Message operations
-│   ├── presence.ts        # Online/offline status
-│   ├── typing.ts          # Typing indicators
-│   ├── reactions.ts       # Message reactions
-│   └── auth.config.js     # Clerk integration
-├── hooks/                 # Custom React hooks
-│   ├── useStoreUser.ts    # Sync Clerk user to Convex
-│   └── usePresence.ts     # Update user presence
-├── lib/                   # Utility functions
-│   └── utils.ts           # Helper functions (timestamps, etc.)
-└── providers/             # React context providers
-    └── ConvexClientProvider.tsx
-```
+The frontend can be deployed on Vercel after adding the required environment variables.
 
-## 🎯 Key Features Implementation
+To deploy Convex to production:
 
-### Real-time Messaging
-Messages are stored in Convex and delivered instantly to all participants using Convex's reactive queries. No polling or manual refreshing needed.
-
-### Presence System
-Users' online status is tracked by updating a timestamp every 15 seconds. Users are considered online if their last update was within 30 seconds.
-
-### Typing Indicators
-When a user types, a typing event is sent to Convex. The indicator automatically clears after 2 seconds of inactivity or when the message is sent.
-
-### Unread Counts
-Messages have a `read` boolean field. Counts are calculated in real-time by querying unread messages per conversation. Opening a conversation marks all messages as read.
-
-### Message Reactions
-Each user can add one reaction per message. Clicking a different emoji replaces the current reaction. Clicking the same emoji removes it. Reaction counts are aggregated and displayed below messages.
-
-## 🚢 Deployment
-
-### Deploy to Vercel
-
-1. Push your code to GitHub
-2. Import your repository in [Vercel](https://vercel.com)
-3. Add environment variables:
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-   - `CLERK_SECRET_KEY`
-   - `CONVEX_DEPLOYMENT` (auto-generated by Convex)
-4. Deploy!
-
-### Deploy Convex
-
-```bash
 npx convex deploy
-```
 
-This creates a production Convex deployment and updates your environment variables.
 
-## 📝 License
-
-MIT License - feel free to use this project for learning or as a starting point for your own chat application.
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to open issues or submit pull requests.
-
----
-
-Built with ❤️ using modern web technologies
+I built this project to explore real-time systems and improve my understanding of full-stack architecture using modern tools.

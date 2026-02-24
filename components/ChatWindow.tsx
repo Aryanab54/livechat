@@ -124,8 +124,8 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
   };
 
   return (
-    <div className="flex-1 flex flex-col relative">
-      <div className="p-4 border-b flex items-center gap-3">
+    <div className="flex-1 flex flex-col h-full">
+      <div className="p-4 border-b flex items-center gap-3 shrink-0">
         <div className="relative">
           <Avatar>
             <AvatarImage src={selectedUser.imageUrl} />
@@ -143,7 +143,8 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
         </div>
       </div>
 
-      <ScrollArea ref={scrollRef} className="flex-1 p-4" onScroll={handleScroll}>
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea ref={scrollRef} className="h-full p-4" onScroll={handleScroll}>
         {!messages ? (
           <MessageSkeleton />
         ) : messages.length === 0 ? (
@@ -185,7 +186,8 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
             )}
           </div>
         )}
-      </ScrollArea>
+        </ScrollArea>
+      </div>
 
       {showScrollButton && (
         <button
@@ -196,7 +198,7 @@ export function ChatWindow({ currentUserId, selectedUser, isOnline }: ChatWindow
         </button>
       )}
 
-      <div className="p-4 border-t flex flex-col gap-2">
+      <div className="p-4 border-t flex flex-col gap-2 shrink-0">
         {sendError && (
           <div className="flex items-center gap-2 text-sm text-destructive">
             <AlertCircle className="h-4 w-4" />
