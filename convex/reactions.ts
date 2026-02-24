@@ -8,17 +8,21 @@ export const toggleReaction = mutation({
     emoji: v.string(),
   },
   handler: async (ctx, args) => {
-    const existing = await ctx.db
+    const allUserReactions = await ctx.db
       .query("reactions")
       .withIndex("by_user_message", (q) =>
         q.eq("userId", args.userId).eq("messageId", args.messageId)
       )
-      .filter((q) => q.eq(q.field("emoji"), args.emoji))
-      .first();
+      .collect();
 
-    if (existing) {
-      await ctx.db.delete(existing._id);
+    const sameEmojiReaction = allUserReactions.find((r) => r.emoji === args.emoji);
+
+    if (sameEmojiReaction) {
+      await ctx.db.delete(sameEmojiReaction._id);
     } else {
+      for (const reaction of allUserReactions) {
+        await ctx.db.delete(reaction._id);
+      }
       await ctx.db.insert("reactions", args);
     }
   },

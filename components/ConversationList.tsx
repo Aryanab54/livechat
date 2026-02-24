@@ -31,45 +31,49 @@ export function ConversationList({ currentUserId, selectedUserId, onSelectUser, 
           </p>
         </div>
       ) : (
-        conversations.map(({ user, lastMessage, unreadCount }) => (
-          <button
-            key={user._id}
-            onClick={() => onSelectUser(user._id)}
-            className={`w-full p-4 flex items-center gap-3 hover:bg-accent transition-colors border-b ${
-              selectedUserId === user._id ? "bg-accent" : ""
-            }`}
-          >
-            <div className="relative">
-              <Avatar>
-                <AvatarImage src={user.imageUrl} />
-                <AvatarFallback>{user.name[0]}</AvatarFallback>
-              </Avatar>
-              {onlineUsers.includes(user._id) && (
-                <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
-              )}
-            </div>
-            <div className="flex-1 text-left overflow-hidden">
-              <p className="font-medium">{user.name}</p>
-              <p className="text-sm text-muted-foreground truncate">
-                {lastMessage.senderId === currentUserId ? "You: " : ""}
-                {lastMessage.content}
-              </p>
-            </div>
-            <div className="flex flex-col items-end gap-1">
-              <span className="text-xs text-muted-foreground">
-                {new Date(lastMessage.timestamp).toLocaleTimeString([], { 
-                  hour: '2-digit', 
-                  minute: '2-digit' 
-                })}
-              </span>
-              {unreadCount > 0 && (
-                <span className="bg-primary text-primary-foreground text-xs font-medium px-2 py-0.5 rounded-full min-w-[20px] text-center">
-                  {unreadCount}
+        conversations.map(({ user, lastMessage, unreadCount }) => {
+          if (!user) return null;
+          const typedUser = user as { _id: Id<"users">; name: string; imageUrl?: string };
+          return (
+            <button
+              key={typedUser._id}
+              onClick={() => onSelectUser(typedUser._id)}
+              className={`w-full p-4 flex items-center gap-3 hover:bg-accent transition-colors border-b ${
+                selectedUserId === typedUser._id ? "bg-accent" : ""
+              }`}
+            >
+              <div className="relative">
+                <Avatar>
+                  <AvatarImage src={typedUser.imageUrl} />
+                  <AvatarFallback>{typedUser.name[0]}</AvatarFallback>
+                </Avatar>
+                {onlineUsers.includes(typedUser._id) && (
+                  <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 rounded-full border-2 border-background" />
+                )}
+              </div>
+              <div className="flex-1 text-left overflow-hidden">
+                <p className="font-medium">{typedUser.name}</p>
+                <p className="text-sm text-muted-foreground truncate">
+                  {lastMessage.senderId === currentUserId ? "You: " : ""}
+                  {lastMessage.content}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-xs text-muted-foreground">
+                  {new Date(lastMessage.timestamp).toLocaleTimeString([], { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                  })}
                 </span>
-              )}
-            </div>
-          </button>
-        ))
+                {unreadCount > 0 && (
+                  <span className="bg-primary text-primary-foreground text-xs font-medium px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
+            </button>
+          );
+        })
       )}
     </ScrollArea>
   );

@@ -60,7 +60,7 @@ export const getConversations = query({
 
     const conversations = await Promise.all(
       Array.from(conversationMap.entries()).map(async ([userId, lastMsg]) => {
-        const user = await ctx.db.get(userId);
+        const user = await ctx.db.get(userId as any);
         return { 
           user, 
           lastMessage: lastMsg,
@@ -70,7 +70,7 @@ export const getConversations = query({
     );
 
     return conversations
-      .filter((c) => c.user)
+      .filter((c) => c.user !== null)
       .sort((a, b) => b.lastMessage.timestamp - a.lastMessage.timestamp);
   },
 });

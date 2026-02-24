@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useStoreUser } from "@/hooks/useStoreUser";
 import { usePresence } from "@/hooks/usePresence";
-import { MessageSquare, Users } from "lucide-react";
+import { MessageSquare, Users, ArrowLeft } from "lucide-react";
 
 export default function Home() {
   const { user, isSignedIn } = useUser();
@@ -49,13 +49,23 @@ export default function Home() {
   return (
     <div className="flex h-screen flex-col">
       <header className="border-b p-4 flex items-center justify-between">
-        <h1 className="text-xl font-bold">LiveChat</h1>
+        <div className="flex items-center gap-2">
+          {selectedUser && (
+            <button
+              onClick={() => setSelectedUserId(undefined)}
+              className="lg:hidden"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          )}
+          <h1 className="text-xl font-bold">LiveChat</h1>
+        </div>
         <div className="flex items-center gap-3">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user?.imageUrl} />
             <AvatarFallback>{user?.fullName?.[0]}</AvatarFallback>
           </Avatar>
-          <span className="font-medium">{user?.fullName}</span>
+          <span className="font-medium hidden sm:inline">{user?.fullName}</span>
           <SignOutButton>
             <Button variant="outline" size="sm">Sign Out</Button>
           </SignOutButton>
@@ -64,7 +74,9 @@ export default function Home() {
 
       <div className="flex flex-1 overflow-hidden">
         {currentUser && (
-          <div className="w-80 border-r bg-muted/10">
+          <div className={`w-full lg:w-80 border-r bg-muted/10 ${
+            selectedUser ? "hidden lg:block" : "block"
+          }`}>
             <div className="flex border-b">
               <button
                 onClick={() => setActiveTab("conversations")}
@@ -104,13 +116,15 @@ export default function Home() {
         )}
         
         {selectedUser && currentUser ? (
-          <ChatWindow 
-            currentUserId={currentUser._id} 
-            selectedUser={selectedUser}
-            isOnline={onlineUsers?.includes(selectedUser._id) || false}
-          />
+          <div className="flex-1">
+            <ChatWindow 
+              currentUserId={currentUser._id} 
+              selectedUser={selectedUser}
+              isOnline={onlineUsers?.includes(selectedUser._id) || false}
+            />
+          </div>
         ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
+          <div className="hidden lg:flex flex-1 items-center justify-center text-muted-foreground">
             Select a user to start chatting
           </div>
         )}
